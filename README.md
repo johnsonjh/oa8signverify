@@ -4,7 +4,7 @@
 
 ---
 
-[![XOrgPL](https://img.shields.io/badge/Open%20Source-X.OrgPL-Blue.svg)](https://gitlab.gridfinity.com/gridfinity/oa8signverify/-/blob/master/LICENSE)
+[![XOrgPL](https://img.shields.io/badge/Open%20Source-X.OrgPL-blue.svg)](https://gitlab.gridfinity.com/gridfinity/oa8signverify/-/blob/master/LICENSE)
 [![MadeWithGitLabCI/CD](https://img.shields.io/badge/Made%20With-GitLab%20CI%2FCD-Blue.svg)](https://gitlab.gridfinity.com/)
 [![DeepSourceA](https://deepsource.io/gh/gridfinity/oa8signverify.svg/?label=active+issues)](https://deepsource.io/gh/gridfinity/oa8signverify.svg/?ref=repository-badge)
 [![DeepSourceR](https://deepsource.io/gh/gridfinity/pktwallets.gridfinity.dev.svg/?label=resolved+issues)](https://deepsource.io/gh/gridfinity/pktwallets.gridfinity.dev/?ref=repository-badge)
