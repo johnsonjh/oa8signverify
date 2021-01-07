@@ -35,4 +35,3 @@
 ## License
 
 - [The X.Org Preferred License (**XORGPL**)](https://gitlab.gridfinity.com/gridfinity/oa8signverify/-/blob/master/LICENSE)
-
