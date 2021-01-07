@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -e -u
+if ! env -i command -p rm -f "$(env -i command -p mktemp)"; then
+	printf '%s\n' "Error: rm could not be located."; exit 1; fi
+cleanup() { env -i command -p rm -f "${tmpfile:-}" || true; };
+filename=${1:-}; signature=${2:-}; publickey=${3:-}
+if ! env command openssl version >/dev/null 2>&1; then
+	printf '%s\n' "Error: openssl could not be located."; exit 1; fi
+if ! env command ascii85 -h >/dev/null 2>&1; then
+	printf '%s\n' "Error: ascii85 could not be located."
+	printf '%s\n' "Suggestion: \"gem install Ascii85\"."; exit 1; fi
+if [ ${#} -lt 3 ]; then
+	printf '%s\n' "*** oa8verify (v1.0.0)"
+	printf '%s\n' "Usage: oa8verify <file> <signature.oa8> <public.oa8>"; exit 1; fi
+tmpfile="$(env -i command -p mktemp)" ||
+	{ printf '%s\n' "Error: mktemp failure."; exit 1; };
+env command ascii85 -d <"${signature:?Error: signature undefined.}" \
+	>"${tmpfile:?Error: tmpfile undefined.}" ||
+	{ printf '%s\n' "Error: Signature parsing failure."; cleanup; exit 1; };
+env command openssl dgst -sha3-512 \
+	-verify "${publickey:?Error: publickey undefined.}" \
+	-signature "${tmpfile:?Error: tmpfile undefined.}" \
+	"${filename:?Error filename undefined}" ||
+	{ printf '%s\n' "Error: Verification failure."; cleanup; exit 1; };
+cleanup || true
