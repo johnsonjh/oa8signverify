@@ -19,7 +19,6 @@
 ### Source Code
 
 - [Gridfinity GitLab](https://gitlab.gridfinity.com/gridfinity/oa8signverify)
-- [SourceHut Git](https://sr.ht/~trn/oa8signverify)
 - [GitHub](https://github.com/gridfinity/oa8signverify)
 
 ## Requirements
@@ -35,3 +34,4 @@
 ## License
 
 - [The X.Org Preferred License (**XOrgPL**)](https://gitlab.gridfinity.com/gridfinity/oa8signverify/-/blob/master/LICENSE)
+
