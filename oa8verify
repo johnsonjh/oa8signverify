@@ -5,6 +5,8 @@ set -e > /dev/null 2>&1
 set -u > /dev/null 2>&1
 
 me=oa8verify
+vers=1.1.0
+
 osl=openssl
 a85=ascii85
 
@@ -49,8 +51,8 @@ if ! command -p env \
 			elif [ "${exitstatus:-}" -eq 127 ]; then
 				printf '%s\n' \
 					"Error: ${a85:?} could not be found" >&2
-				printf '%s\n' \
-					'	Suggestion: "gem install Ascii85"' >&2
+				printf '\t%s\n' \
+					'Suggestion: "gem install Ascii85"' >&2
 				exit 1
 			else
 				printf '%s\n' \
@@ -61,9 +63,9 @@ fi
 
 if [ ${#} -lt 3 ]; then
 	printf '%s\n' \
-		"*** oa8verify (v1.1.0)"
-	printf '%s\n' \
-		"Usage: oa8verify <file> <signature.oa8> <public.oa8>"
+		"*** ${me:?Error: me undefined} (v${vers:?Error: vers undefined})"
+	printf '\t%s\n' \
+		"Usage: ${me:?} <file> <signature.oa8> <public.oa8>"
 	exit 1
 fi
 

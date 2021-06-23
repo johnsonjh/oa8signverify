@@ -1,10 +1,11 @@
 #!/usr/bin/env sh
 # vim: filetype=sh:tabstop=4:tw=80
 
-me=oa8sign
-
 set -e > /dev/null 2>&1
 set -u > /dev/null 2>&1
+
+me=oa8sign
+vers=1.1.0
 
 osl=openssl
 a85=ascii85
@@ -72,9 +73,9 @@ fi
 
 if [ "${#}" -lt 2 ]; then
 	printf '%s\n' \
-		"*** oa8sign (v1.1.0)"
-	printf '%s\n' \
-		"Usage: oa8sign <file> <private.oa8>"
+		"*** ${me:?Error: me undefined} (v${vers:?Error: vers undefined})"
+	printf '\t%s\n' \
+		"Usage: ${me:?} <file> <private.oa8>"
 	exit 1
 fi
 
@@ -92,7 +93,7 @@ fi
 
 if [ ! -f "${privatekey:?Error: privatekey undefined}" ]; then
 	printf '%s\n' \
-		"Error: private key \"${privatekey:?}\" not found" >&2
+		"Error: Private key \"${privatekey:?}\" not found" >&2
 	exit 1
 fi
 
