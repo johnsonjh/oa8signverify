@@ -18,8 +18,10 @@
 
 ## Requirements
 
-- [OpenSSL >= 1.1.1](https://www.openssl.org)
-- [Ruby >= 2.4.0](https://www.ruby-lang.org)
+- *POSIX* environment,
+- `mktemp(1)`,
+- [OpenSSL >= 1.1.1](https://www.openssl.org),
+- [Ruby >= 2.4.0](https://www.ruby-lang.org),
 - [ascii85gem >= 1.1.0](https://github.com/DataWraith/ascii85gem)
 
 ---
