@@ -18,7 +18,7 @@
 
 ## Requirements
 
-- *POSIX* environment,
+- _POSIX_ environment,
 - `mktemp(1)`,
 - [OpenSSL >= 1.1.1](https://www.openssl.org),
 - [Ruby >= 2.4.0](https://www.ruby-lang.org),
