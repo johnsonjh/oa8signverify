@@ -1,41 +1,68 @@
 #!/usr/bin/env sh
+# vim: filetype=sh:tabstop=4:tw=80
 
-set -e -u
+set -e > /dev/null 2>&1
+set -u > /dev/null 2>&1
 
 # shellcheck disable=SC2097,SC2098
 if ! PATH="$(command -p env -i \
 	getconf PATH)" \
-		command -p env -i TMPDIR="${TMPDIR:-}" PATH="${PATH:?}" \
+		command -p env -i TMPDIR="${TMPDIR:-}" PATH="${PATH:-}" \
 			rm -f \
 				"$(command -p env -i TMPDIR="${TMPDIR:-}" mktemp)"; then
 					printf '%s\n' \
-						"Error: shell is misbehaving."
+						"Error: shell is misbehaving" >&2
 					exit 1
 fi
 
 cleanup() {
 	command -p env -i \
-		rm -f "${tmpfile:-}" ||
-			true
+		rm -f \
+			"${tmpfile:-}" ||
+				true
 }
 
 filename=${1:-}
 privatekey=${2:-}
 
+exitstatus=""
 if ! command -p env \
 	openssl version > /dev/null 2>&1; then
-		printf '%s\n' \
-			"Error: openssl could not be executed."
-		exit 1
+		exitstatus="${?:?Error: exitstatus undefined}"
+		if [ "${exitstatus:-}" -eq 126 ]; then
+			printf '%s\n' \
+				"Error: openssl could not be executed" >&2
+			exit 1
+		elif [ "${exitstatus:-}" -eq 127 ]; then
+			printf '%s\n' \
+				"Error: openssl could not be found" >&2
+			exit 1
+		else
+			printf '%s\n' \
+				"Error: openssl failure ${exitstatus:-}" >&2
+			exit 1
+		fi
 fi
 
+exitstatus=""
 if ! command -p env \
 		ascii85 -h > /dev/null 2>&1; then
-			printf '%s\n' \
-				"Error: ascii85 could not be executed."
-			printf '%s\n' \
-				'Suggestion: "gem install Ascii85".'
-			exit 1
+			exitstatus="${?:?Error: exitstatus undefined}"
+			if [ "${exitstatus:-}" -eq 126 ]; then
+				printf '%s\n' \
+					"Error: ascii85 could not be executed" >&2
+				exit 1
+			elif [ "${exitstatus:-}" -eq 127 ]; then
+				printf '%s\n' \
+					"Error: ascii85 could not be found" >&2
+				printf '%s\n' \
+					'Suggestion: "gem install Ascii85"' >&2
+				exit 1
+			else
+				printf '%s\n' \
+					"Error: ascii85 failure ${exitstatus:-}" >&2
+				exit 1
+			fi
 fi
 
 if [ "${#}" -lt 2 ]; then
@@ -46,54 +73,92 @@ if [ "${#}" -lt 2 ]; then
 	exit 1
 fi
 
-if [ ! -f "${filename:?Error: filename undefined.}" ]; then
+if [ ! -f "${filename:?Error: filename undefined}" ]; then
 	printf '%s\n' \
-		"Error: file not found."
+		"Error: file not found" >&2
 	exit 1
 fi
 
-if [ -f "${filename:?Error: filename undefined.}.oa8" ]; then
+if [ -f "${filename:?Error: filename undefined}.oa8" ]; then
 	printf '%s\n' \
-		\"Error: "${filename:?Error: filename undefined.}".oa8 exists.\"
+		"Error: \"${filename:?Error: filename undefined}.oa8\" exists" >&2
 	exit 1
 fi
 
-if [ ! -f "${privatekey:?Error: privatekey undefined.}" ]; then
+if [ ! -f "${privatekey:?Error: privatekey undefined}" ]; then
 	printf '%s\n' \
-		"Error: privatekey not found."
+		"Error: private key not found" >&2
 	exit 1
 fi
 
+tmpfile=""
 tmpfile=$(command -p env -i TMPDIR="${TMPDIR:-}" \
 	mktemp) ||
 		{
 			printf '%s\n' \
-				"Error: mktemp failure."
+				"Error: mktemp failure" >&2
 			exit 1
 		}
 
+exitstatus=""
 command -p env \
 	openssl dgst -sha3-512 \
-		-sign "${privatekey:?Error: privatekey undefined.}" \
-			-out "${tmpfile:?Error: tmpfile undefined.}" \
-				"${filename:?Error: filename undefined.}" ||
+		-sign "${privatekey:?Error: privatekey undefined}" \
+			-out "${tmpfile:?Error: tmpfile undefined}" \
+				"${filename:?Error: filename undefined}" ||
 					{
-						printf '%s\n' \
-							"Error: openssl failure."
-						cleanup
-						exit 1
+						exitstatus="${?:?Error: exitstatus undefined}"
+						if [ "${exitstatus:-}" -eq 126 ]; then
+							printf '%s\n' \
+								"Error: openssl could not be executed" >&2
+							cleanup
+							exit 1
+						elif [ "${exitstatus:-}" -eq 127 ]; then
+							printf '%s\n' \
+								"Error: openssl could not be found" >&2
+							cleanup
+							exit 1
+						else
+							printf '%s\n' \
+								"Error: openssl failure ${exitstatus:-}" >&2
+							cleanup
+							exit 1
+						fi
 					}
 
-printf '****** BEGIN OA8 SIGNATURE ******\n%s\n****** END OA8 SIGNATURE ******\n' \
-	"$(command -p env \
-		ascii85 -w 61 \
-			< "${tmpfile:?Error: filename undefined.}")" \
-				> "${filename:?Error: filename undefined.}.oa8" ||
-					{
-						printf '%s\n' \
-							"Error: Writing signature failed."
-						cleanup
-						exit 1
-					}
+exitstatus=""
+printf \
+	'****** BEGIN OA8 SIGNATURE ******\n%s\n****** END OA8 SIGNATURE ******\n' \
+		"$(command -p env \
+			ascii85 -w 61 \
+				< "${tmpfile:?Error: filename undefined}")" \
+					> "${filename:?Error: filename undefined}.oa8" ||
+						{
+							exitstatus="${?:?Error: exitstatus undefined}"
+							if [ "${exitstatus:-}" -eq 126 ]; then
+								printf '%s\n' \
+									"Error: ascii85 could not be executed" >&2
+								cleanup
+								exit 1
+							elif [ "${exitstatus:-}" -eq 127 ]; then
+								printf '%s\n' \
+									"Error: ascii85 could not be found" >&2
+								cleanup
+								exit 1
+							else
+								printf '%s\n' \
+									"Error: oa8sign failure ${exitstatus:-}" >&2
+								cleanup
+								exit 2
+							fi
+						}
 
 cleanup
+
+# Local Variables:
+# mode: sh
+# sh-shell: sh
+# sh-indentation: 4
+# sh-basic-offset: 4
+# tab-width: 4
+# End:
