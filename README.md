@@ -25,6 +25,7 @@
 
 ## License
 
-- The X.Org Preferred License (**XPL**)
+- [MIT license](https://opensource.org/licenses/mit-license.php)
+  (_*X.Org Preferred License* variant_)
 
 ---
