@@ -1,59 +1,99 @@
 #!/usr/bin/env sh
+
 set -e -u
-if ! env -i command -p rm -f "$(env -i command -p mktemp)"; then
-	printf '%s\n' "Error: rm could not be located."
-	exit 1
+
+# shellcheck disable=SC2097,SC2098
+if ! PATH="$(command -p env -i \
+	getconf PATH)" \
+		command -p env -i TMPDIR="${TMPDIR:-}" PATH="${PATH:?}" \
+			rm -f \
+				"$(command -p env -i TMPDIR="${TMPDIR:-}" mktemp)"; then
+					printf '%s\n' \
+						"Error: shell is misbehaving."
+					exit 1
 fi
-cleanup() { env -i command -p rm -f "${tmpfile:-}" || true; }
+
+cleanup() {
+	command -p env -i \
+		rm -f "${tmpfile:-}" ||
+			true
+}
+
 filename=${1:-}
 privatekey=${2:-}
-if ! env command openssl version >/dev/null 2>&1; then
-	printf '%s\n' "Error: openssl could not be located."
-	exit 1
+
+if ! command -p env \
+	openssl version > /dev/null 2>&1; then
+		printf '%s\n' \
+			"Error: openssl could not be executed."
+		exit 1
 fi
-if ! env command ascii85 -h >/dev/null 2>&1; then
-	printf '%s\n' "Error: ascii85 could not be located."
-	printf '%s\n' 'Suggestion: "gem install Ascii85".'
-	exit 1
+
+if ! command -p env \
+		ascii85 -h > /dev/null 2>&1; then
+			printf '%s\n' \
+				"Error: ascii85 could not be executed."
+			printf '%s\n' \
+				'Suggestion: "gem install Ascii85".'
+			exit 1
 fi
+
 if [ "${#}" -lt 2 ]; then
-	printf '%s\n' "*** oa8sign (v1.0.0)"
-	printf '%s\n' "Usage: oa8sign <file> <private.oa8>"
+	printf '%s\n' \
+		"*** oa8sign (v1.1.0)"
+	printf '%s\n' \
+		"Usage: oa8sign <file> <private.oa8>"
 	exit 1
 fi
+
 if [ ! -f "${filename:?Error: filename undefined.}" ]; then
-	printf '%s\n' "Error: file not found."
+	printf '%s\n' \
+		"Error: file not found."
 	exit 1
 fi
+
 if [ -f "${filename:?Error: filename undefined.}.oa8" ]; then
-	printf '%s\n' \"Error: "${filename:?Error: filename undefined.}".oa8 exists.\"
+	printf '%s\n' \
+		\"Error: "${filename:?Error: filename undefined.}".oa8 exists.\"
 	exit 1
 fi
+
 if [ ! -f "${privatekey:?Error: privatekey undefined.}" ]; then
-	printf '%s\n' "Error: privatekey not found."
+	printf '%s\n' \
+		"Error: privatekey not found."
 	exit 1
 fi
-tmpfile=$(env command -p mktemp) ||
-	{
-		printf '%s\n' "Error: mktemp failure."
-		exit 1
-	}
-env command openssl dgst -sha3-512 \
-	-sign "${privatekey:?Error: privatekey undefined.}" \
-	-out "${tmpfile:?Error: tmpfile undefined.}" \
-	"${filename:?Error: filename undefined.}" ||
-	{
-		printf '%s\n' "Error: openssl failure."
-		cleanup
-		exit 1
-	}
+
+tmpfile=$(command -p env -i TMPDIR="${TMPDIR:-}" \
+	mktemp) ||
+		{
+			printf '%s\n' \
+				"Error: mktemp failure."
+			exit 1
+		}
+
+command -p env \
+	openssl dgst -sha3-512 \
+		-sign "${privatekey:?Error: privatekey undefined.}" \
+			-out "${tmpfile:?Error: tmpfile undefined.}" \
+				"${filename:?Error: filename undefined.}" ||
+					{
+						printf '%s\n' \
+							"Error: openssl failure."
+						cleanup
+						exit 1
+					}
+
 printf '****** BEGIN OA8 SIGNATURE ******\n%s\n****** END OA8 SIGNATURE ******\n' \
-	"$(env command ascii85 -w 61 \
-		<"${tmpfile:?Error: filename undefined.}")" \
-	>"${filename:?Error: filename undefined.}.oa8" ||
-	{
-		printf '%s\n' "Error: Writing signature failed."
-		cleanup
-		exit 1
-	}
-cleanup || true
+	"$(command -p env \
+		ascii85 -w 61 \
+			< "${tmpfile:?Error: filename undefined.}")" \
+				> "${filename:?Error: filename undefined.}.oa8" ||
+					{
+						printf '%s\n' \
+							"Error: Writing signature failed."
+						cleanup
+						exit 1
+					}
+
+cleanup
