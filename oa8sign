@@ -1,8 +1,13 @@
 #!/usr/bin/env sh
 # vim: filetype=sh:tabstop=4:tw=80
 
+me=oa8sign
+
 set -e > /dev/null 2>&1
 set -u > /dev/null 2>&1
+
+osl=openssl
+a85=ascii85
 
 # shellcheck disable=SC2097,SC2098
 if ! PATH="$(command -p env -i \
@@ -11,7 +16,7 @@ if ! PATH="$(command -p env -i \
 			rm -f \
 				"$(command -p env -i TMPDIR="${TMPDIR:-}" mktemp)"; then
 					printf '%s\n' \
-						"Error: shell is misbehaving" >&2
+						"Error: Misbehaving shell or environment; aborting" >&2
 					exit 1
 fi
 
@@ -27,40 +32,40 @@ privatekey=${2:-}
 
 exitstatus=""
 if ! command -p env \
-	openssl version > /dev/null 2>&1; then
+	"${osl:?}" version > /dev/null 2>&1; then
 		exitstatus="${?:?Error: exitstatus undefined}"
 		if [ "${exitstatus:-}" -eq 126 ]; then
 			printf '%s\n' \
-				"Error: openssl could not be executed" >&2
+				"Error: ${osl:?} could not be executed" >&2
 			exit 1
 		elif [ "${exitstatus:-}" -eq 127 ]; then
 			printf '%s\n' \
-				"Error: openssl could not be found" >&2
+				"Error: ${osl:?} could not be found" >&2
 			exit 1
 		else
 			printf '%s\n' \
-				"Error: openssl failure ${exitstatus:-}" >&2
+				"Error: ${osl:?} failure ${exitstatus:-}" >&2
 			exit 1
 		fi
 fi
 
 exitstatus=""
 if ! command -p env \
-		ascii85 -h > /dev/null 2>&1; then
+		"${a85:?}" -h > /dev/null 2>&1; then
 			exitstatus="${?:?Error: exitstatus undefined}"
 			if [ "${exitstatus:-}" -eq 126 ]; then
 				printf '%s\n' \
-					"Error: ascii85 could not be executed" >&2
+					"Error: ${a85:?} could not be executed" >&2
 				exit 1
 			elif [ "${exitstatus:-}" -eq 127 ]; then
 				printf '%s\n' \
-					"Error: ascii85 could not be found" >&2
-				printf '%s\n' \
+					"Error: ${a85:?} could not be found" >&2
+				printf '\t%s\n' \
 					'Suggestion: "gem install Ascii85"' >&2
 				exit 1
 			else
 				printf '%s\n' \
-					"Error: ascii85 failure ${exitstatus:-}" >&2
+					"Error: ${a85:?} failure ${exitstatus:-}" >&2
 				exit 1
 			fi
 fi
@@ -75,7 +80,7 @@ fi
 
 if [ ! -f "${filename:?Error: filename undefined}" ]; then
 	printf '%s\n' \
-		"Error: file not found" >&2
+		"Error: \"${filename:?}\" not found" >&2
 	exit 1
 fi
 
@@ -87,7 +92,7 @@ fi
 
 if [ ! -f "${privatekey:?Error: privatekey undefined}" ]; then
 	printf '%s\n' \
-		"Error: private key not found" >&2
+		"Error: private key \"${privatekey:?}\" not found" >&2
 	exit 1
 fi
 
@@ -102,7 +107,7 @@ tmpfile=$(command -p env -i TMPDIR="${TMPDIR:-}" \
 
 exitstatus=""
 command -p env \
-	openssl dgst -sha3-512 \
+	"${osl:?}" dgst -sha3-512 \
 		-sign "${privatekey:?Error: privatekey undefined}" \
 			-out "${tmpfile:?Error: tmpfile undefined}" \
 				"${filename:?Error: filename undefined}" ||
@@ -110,17 +115,17 @@ command -p env \
 						exitstatus="${?:?Error: exitstatus undefined}"
 						if [ "${exitstatus:-}" -eq 126 ]; then
 							printf '%s\n' \
-								"Error: openssl could not be executed" >&2
+								"Error: ${osl:?} could not be executed" >&2
 							cleanup
 							exit 1
 						elif [ "${exitstatus:-}" -eq 127 ]; then
 							printf '%s\n' \
-								"Error: openssl could not be found" >&2
+								"Error: ${osl:?} could not be found" >&2
 							cleanup
 							exit 1
 						else
 							printf '%s\n' \
-								"Error: openssl failure ${exitstatus:-}" >&2
+								"Error: ${osl:?} failure ${exitstatus:-}" >&2
 							cleanup
 							exit 1
 						fi
@@ -130,24 +135,24 @@ exitstatus=""
 printf \
 	'****** BEGIN OA8 SIGNATURE ******\n%s\n****** END OA8 SIGNATURE ******\n' \
 		"$(command -p env \
-			ascii85 -w 61 \
+			"${a85:?}" -w 61 \
 				< "${tmpfile:?Error: filename undefined}")" \
 					> "${filename:?Error: filename undefined}.oa8" ||
 						{
 							exitstatus="${?:?Error: exitstatus undefined}"
 							if [ "${exitstatus:-}" -eq 126 ]; then
 								printf '%s\n' \
-									"Error: ascii85 could not be executed" >&2
+									"Error: ${a85:?} could not be executed" >&2
 								cleanup
 								exit 1
 							elif [ "${exitstatus:-}" -eq 127 ]; then
 								printf '%s\n' \
-									"Error: ascii85 could not be found" >&2
+									"Error: ${a85:?} could not be found" >&2
 								cleanup
 								exit 1
 							else
 								printf '%s\n' \
-									"Error: oa8sign failure ${exitstatus:-}" >&2
+									"Error: ${me:?} failure ${exitstatus:-}" >&2
 								cleanup
 								exit 2
 							fi
