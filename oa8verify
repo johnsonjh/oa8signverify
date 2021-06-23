@@ -5,7 +5,7 @@ set -e > /dev/null 2>&1
 set -u > /dev/null 2>&1
 
 me=oa8verify
-vers=1.1.0
+vers=1.1.1
 
 osl=openssl
 a85=ascii85
