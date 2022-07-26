@@ -34,7 +34,7 @@ signature=${2:-}
 publickey=${3:-}
 
 exitstatus=""
-if ! command -p env \
+if ! command env \
   "${osl:?}" version > /dev/null 2>&1; then
   printf '%s\n' \
     "Error: ${osl:?} could not be executed" >&2
@@ -42,7 +42,7 @@ if ! command -p env \
 fi
 
 exitstatus=""
-if ! command -p env "${a85:?}" -h > /dev/null 2>&1; then
+if ! command env "${a85:?}" -h > /dev/null 2>&1; then
   exitstatus="${?:?Error: exitstatus undefined}"
   if [ "${exitstatus:-}" -eq 126 ]; then
     printf '%s\n' \
