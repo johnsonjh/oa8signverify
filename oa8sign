@@ -33,41 +33,38 @@ filename=${1:-}
 privatekey=${2:-}
 
 exitstatus=""
-if ! command env "${osl:?}" version > /dev/null 2>&1; then
-  exitstatus="${?:?Error: exitstatus undefined}"
-  if [ "${exitstatus:-}" -eq 126 ]; then
-    printf '%s\n' \
-      "Error: ${osl:?} could not be executed" >&2
-    exit 1
-  elif [ "${exitstatus:-}" -eq 127 ]; then
-    printf '%s\n' \
-      "Error: ${osl:?} could not be found" >&2
-    exit 1
-  else
-    printf '%s\n' \
-      "Error: ${osl:?} failure ${exitstatus:-}" >&2
-    exit 1
-  fi
+command env "${osl:?}" version > /dev/null 2>&1
+exitstatus="${?:?Error: exitstatus undefined}"
+if [ "${exitstatus:-}" -eq 126 ]; then
+  printf '%s\n' \
+    "Error: ${osl:?} could not be executed" >&2
+  exit 1
+elif [ "${exitstatus:-}" -eq 127 ]; then
+  printf '%s\n' \
+    "Error: ${osl:?} could not be found" >&2
+  exit 1
+elif [ "${exitstatus:-0}" -ne 0 ]; then
+  printf '%s\n' \
+    "Error: ${osl:?} failure ${exitstatus:-}" >&2
+  exit 1
 fi
 
 exitstatus=""
-if ! command env "${a85:?}" -h > /dev/null 2>&1; then
-  exitstatus="${?:?Error: exitstatus undefined}"
-  if [ "${exitstatus:-}" -eq 126 ]; then
-    printf '%s\n' \
-      "Error: ${a85:?} could not be executed" >&2
-    exit 1
-  elif [ "${exitstatus:-}" -eq 127 ]; then
-    printf '%s\n' \
-      "Error: ${a85:?} could not be found" >&2
-    printf '\t%s\n' \
-      'Suggestion: "gem install Ascii85"' >&2
-    exit 1
-  else
-    printf '%s\n' \
-      "Error: ${a85:?} failure ${exitstatus:-}" >&2
-    exit 1
-  fi
+exitstatus="${?:?Error: exitstatus undefined}"
+if [ "${exitstatus:-}" -eq 126 ]; then
+  printf '%s\n' \
+    "Error: ${a85:?} could not be executed" >&2
+  exit 1
+elif [ "${exitstatus:-}" -eq 127 ]; then
+  printf '%s\n' \
+    "Error: ${a85:?} could not be found" >&2
+  printf '\t%s\n' \
+    'Suggestion: "gem install Ascii85"' >&2
+  exit 1
+elif [ "${exitstatus:-}" -ne 0 ]; then
+  printf '%s\n' \
+    "Error: ${a85:?} failure ${exitstatus:-}" >&2
+  exit 1
 fi
 
 if [ "${#}" -lt 2 ]; then
