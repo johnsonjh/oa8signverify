@@ -32,8 +32,8 @@ filename=${1:-}
 privatekey=${2:-}
 
 exitstatus=""
-if ! command -p env \
-	"${osl:?}" version > /dev/null 2>&1; then
+if [ ! command -p env \
+	"${osl:?}" version > /dev/null 2>&1 ]; then
 		exitstatus="${?:?Error: exitstatus undefined}"
 		if [ "${exitstatus:-}" -eq 126 ]; then
 			printf '%s\n' \

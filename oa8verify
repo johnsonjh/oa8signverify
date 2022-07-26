@@ -41,8 +41,8 @@ if ! command -p env \
 fi
 
 exitstatus=""
-if ! command -p env \
-		"${a85:?}" -h > /dev/null 2>&1; then
+if [ ! command -p env \
+		"${a85:?}" -h > /dev/null 2>&1 ]; then
 			exitstatus="${?:?Error: exitstatus undefined}"
 			if [ "${exitstatus:-}" -eq 126 ]; then
 				printf '%s\n' \
