@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 # vim: filetype=sh:tabstop=4:tw=80
+# shellcheck disable=SC2097,SC2098
 
 set -e > /dev/null 2>&1
 set -u > /dev/null 2>&1
@@ -10,22 +11,22 @@ vers=1.1.1
 osl=openssl
 a85=ascii85
 
-# shellcheck disable=SC2097,SC2098
 if ! PATH="$(command -p env -i \
-	getconf PATH)" \
-		command -p env -i TMPDIR="${TMPDIR:-}" PATH="${PATH:-}" \
-			rm -f \
-				"$(command -p env -i TMPDIR="${TMPDIR:-}" mktemp)"; then
-					printf '%s\n' \
-						"Error: Misbehaving shell or environment; aborting" >&2
-					exit 1
+  getconf PATH)" \
+  command -p env -i TMPDIR="${TMPDIR:-}" PATH="${PATH:-}" \
+  rm -f \
+  "$(command -p env -i TMPDIR="${TMPDIR:-}" mktemp)"; then
+  printf '%s\n' \
+    "Error: Misbehaving shell or environment; aborting" >&2
+  exit 1
 fi
 
-cleanup() {
-	command -p env -i \
-		rm -f \
-			"${tmpfile:-}" ||
-				true
+cleanup()
+{
+  command -p env -i \
+    rm -f \
+    "${tmpfile:-}" ||
+    true
 }
 
 filename=${1:-}
@@ -34,104 +35,103 @@ publickey=${3:-}
 
 exitstatus=""
 if ! command -p env \
-		"${osl:?}" version > /dev/null 2>&1; then
-		printf '%s\n' \
-			"Error: ${osl:?} could not be executed" >&2
-		exit 1
+  "${osl:?}" version > /dev/null 2>&1; then
+  printf '%s\n' \
+    "Error: ${osl:?} could not be executed" >&2
+  exit 1
 fi
 
 exitstatus=""
-if [ ! command -p env \
-		"${a85:?}" -h > /dev/null 2>&1 ]; then
-			exitstatus="${?:?Error: exitstatus undefined}"
-			if [ "${exitstatus:-}" -eq 126 ]; then
-				printf '%s\n' \
-					"Error: ${a85:?} could not be executed" >&2
-				exit 1
-			elif [ "${exitstatus:-}" -eq 127 ]; then
-				printf '%s\n' \
-					"Error: ${a85:?} could not be found" >&2
-				printf '\t%s\n' \
-					'Suggestion: "gem install Ascii85"' >&2
-				exit 1
-			else
-				printf '%s\n' \
-					"Error: ${a85:?} failure ${exitstatus:-}" >&2
-				exit 1
-			fi
+if ! command -p env "${a85:?}" -h > /dev/null 2>&1; then
+  exitstatus="${?:?Error: exitstatus undefined}"
+  if [ "${exitstatus:-}" -eq 126 ]; then
+    printf '%s\n' \
+      "Error: ${a85:?} could not be executed" >&2
+    exit 1
+  elif [ "${exitstatus:-}" -eq 127 ]; then
+    printf '%s\n' \
+      "Error: ${a85:?} could not be found" >&2
+    printf '\t%s\n' \
+      'Suggestion: "gem install Ascii85"' >&2
+    exit 1
+  else
+    printf '%s\n' \
+      "Error: ${a85:?} failure ${exitstatus:-}" >&2
+    exit 1
+  fi
 fi
 
 if [ ${#} -lt 3 ]; then
-	printf '%s\n' \
-		"*** ${me:?Error: me undefined} (v${vers:?Error: vers undefined})"
-	printf '\t%s\n' \
-		"Usage: ${me:?} <file> <signature.oa8> <public.oa8>"
-	exit 1
+  printf '%s\n' \
+    "*** ${me:?Error: me undefined} (v${vers:?Error: vers undefined})"
+  printf '\t%s\n' \
+    "Usage: ${me:?} <file> <signature.oa8> <public.oa8>"
+  exit 1
 fi
 
 tmpfile=""
 tmpfile="$(command -p env -i TMPDIR="${TMPDIR:-}" \
-	mktemp)" ||
-		{
-			printf '%s\n' \
-				"Error: mktemp failure" >&2
-			exit 1
-		}
+  mktemp)" ||
+  {
+    printf '%s\n' \
+      "Error: mktemp failure" >&2
+    exit 1
+  }
 
 exitstatus=""
 command -p env \
-	"${a85:?}" -d \
-		< "${signature:?Error: signature undefined}" \
-			> "${tmpfile:?Error: tmpfile undefined}" ||
-				{
-					exitstatus="${?:?Error: exitstatus undefined}"
-					if [ "${exitstatus:-}" -eq 126 ]; then
-						printf '%s\n' \
-							"Error: ${a85:?} could not be executed" >&2
-						cleanup
-						exit 1
-					elif [ "${exitstatus:-}" -eq 127 ]; then
-						printf '%s\n' \
-							"Error: ${a85:?} could not be found" >&2
-						printf '\t%s\n' \
-							'Suggestion: "gem install Ascii85"' >&2
-						cleanup
-						exit 1
-					else
-						printf '%s\n' \
-							"Error: signature parsing failure ${exitstatus:-}" \
-								>&2
-						cleanup
-						exit 3
-					fi
-				}
+  "${a85:?}" -d \
+  < "${signature:?Error: signature undefined}" \
+  > "${tmpfile:?Error: tmpfile undefined}" ||
+  {
+    exitstatus="${?:?Error: exitstatus undefined}"
+    if [ "${exitstatus:-}" -eq 126 ]; then
+      printf '%s\n' \
+        "Error: ${a85:?} could not be executed" >&2
+      cleanup
+      exit 1
+    elif [ "${exitstatus:-}" -eq 127 ]; then
+      printf '%s\n' \
+        "Error: ${a85:?} could not be found" >&2
+      printf '\t%s\n' \
+        'Suggestion: "gem install Ascii85"' >&2
+      cleanup
+      exit 1
+    else
+      printf '%s\n' \
+        "Error: signature parsing failure ${exitstatus:-}" \
+        >&2
+      cleanup
+      exit 3
+    fi
+  }
 
 exitstatus=""
 command -p env \
-	"${osl:?}" dgst -sha3-512 \
-		-verify "${publickey:?Error: publickey undefined}" \
-			-signature "${tmpfile:?Error: tmpfile undefined}" \
-				"${filename:?Error filename undefined}" ||
-					{
-						exitstatus="${?:?Error: exitstatus undefined}"
-						if [ "${exitstatus:-}" -eq 126 ]; then
-							printf '%s\n' \
-								"Error: ${osl:?} could not be executed" >&2
-							cleanup
-							exit 1
-						elif [ "${exitstatus:-}" -eq 127 ]; then
-							printf '%s\n' \
-								"Error: ${osl:?} could not be found" >&2
-							cleanup
-							exit 1
-						else
-							printf '%s\n' \
-								"Error: ${me:?} failure ${exitstatus:-}" \
-									>&2
-							cleanup
-							exit 2
-						fi
-					}
+  "${osl:?}" dgst -sha3-512 \
+  -verify "${publickey:?Error: publickey undefined}" \
+  -signature "${tmpfile:?Error: tmpfile undefined}" \
+  "${filename:?Error filename undefined}" ||
+  {
+    exitstatus="${?:?Error: exitstatus undefined}"
+    if [ "${exitstatus:-}" -eq 126 ]; then
+      printf '%s\n' \
+        "Error: ${osl:?} could not be executed" >&2
+      cleanup
+      exit 1
+    elif [ "${exitstatus:-}" -eq 127 ]; then
+      printf '%s\n' \
+        "Error: ${osl:?} could not be found" >&2
+      cleanup
+      exit 1
+    else
+      printf '%s\n' \
+        "Error: ${me:?} failure ${exitstatus:-}" \
+        >&2
+      cleanup
+      exit 2
+    fi
+  }
 
 cleanup
 
